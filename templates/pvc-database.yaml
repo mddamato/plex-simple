@@ -1,0 +1,17 @@
+{{- if and .Values.database-persistence.enabled (not .Values.database-persistence.existingClaim) }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  labels:
+    {{- include "plex-simple.labels" . | nindent 4 }}
+  name: database-{{ include "plex-simple.fullname" . }}
+spec:
+  accessModes:
+  {{- range .Values.database-persistence.accessModes }}
+    - {{ . | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.database-persistence.size | quote }}
+  {{ include "plex-simple.database-storageClass" . }}
+{{- end }}

@@ -1,0 +1,17 @@
+{{- if and .Values.media-persistence.enabled (not .Values.media-persistence.existingClaim) }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  labels:
+    {{- include "plex-simple.labels" . | nindent 4 }}
+  name: media-{{ include "plex-simple.fullname" . }}
+spec:
+  accessModes:
+  {{- range .Values.media-persistence.accessModes }}
+    - {{ . | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.media-persistence.size | quote }}
+  {{ include "plex-simple.media-storageClass" . }}
+{{- end }}
