@@ -1,3 +1,4 @@
+{{- $fullName := include "plex-simple.fullname" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -8,7 +9,8 @@ spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
-  hostNetwork: true
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "plex-simple.selectorLabels" . | nindent 6 }}
@@ -21,6 +23,7 @@ spec:
       labels:
         {{- include "plex-simple.selectorLabels" . | nindent 8 }}
     spec:
+      hostNetwork: true
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -28,6 +31,47 @@ spec:
       serviceAccountName: {{ include "plex-simple.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+
+
+      initContainers:
+
+
+      {{- if .Values.enableFixPermissions }}
+      {{- if .Values.databasePersistence.enabled }}
+      - name: changeowner0
+        image: busybox
+        command: ["sh", "-c", "chown -R {{ .Values.fixPermissions.user }}:{{ .Values.fixPermissions.group }} {{ .Values.databasePersistence.mountPath }} && chmod -R 770 {{ .Values.databasePersistence.mountPath }}"]   
+        volumeMounts:
+        - name: database-{{ include "plex-simple.fullname" . }}
+          mountPath: {{ .Values.databasePersistence.mountPath }}
+          subPath: {{ .Values.databasePersistence.subPath }}
+        securityContext:
+          privileged: true
+      {{- end }}
+      {{- if .Values.transcodePersistence.enabled }}
+      - name: changeowner1
+        image: busybox
+        command: ["sh", "-c", "chown -R {{ .Values.fixPermissions.user }}:{{ .Values.fixPermissions.group }} {{ .Values.transcodePersistence.mountPath }} && chmod -R 770 {{ .Values.transcodePersistence.mountPath }}"]   
+        volumeMounts:
+        - name: transcode-{{ include "plex-simple.fullname" . }}
+          mountPath: {{ .Values.transcodePersistence.mountPath }}
+          subPath: {{ .Values.transcodePersistence.subPath }}
+        securityContext:
+          privileged: true
+      {{- end }}
+      {{- if .Values.mediaPersistence.enabled }}
+      - name: changeowner2
+        image: busybox
+        command: ["sh", "-c", "chown -R {{ .Values.fixPermissions.user }}:{{ .Values.fixPermissions.group }} {{ .Values.mediaPersistence.mountPath }} && chmod -R 770 {{ .Values.mediaPersistence.mountPath }}"]   
+        volumeMounts:
+        - name: media-{{ include "plex-simple.fullname" . }}
+          mountPath: {{ .Values.mediaPersistence.mountPath }}
+          subPath: {{ .Values.mediaPersistence.subPath }}
+        securityContext:
+          privileged: true
+      {{- end }}
+      {{- end }}
+
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -39,42 +83,55 @@ spec:
               containerPort: 32400
               protocol: TCP
           livenessProbe:
-            httpGet:
-              path: /
-              port: http
+            exec:
+              command:
+              - /healthcheck.sh
+            initialDelaySeconds: 60
+            periodSeconds: 30
           readinessProbe:
-            httpGet:
-              path: /
-              port: http
+            exec:
+              command:
+              - /healthcheck.sh
+            initialDelaySeconds: 60
+            periodSeconds: 30
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-
+          volumeMounts:
+            - name: database-{{ include "plex-simple.fullname" . }}
+              mountPath: {{ .Values.databasePersistence.mountPath }}
+              subPath: {{ .Values.databasePersistence.subPath }}
+            - name: transcode-{{ include "plex-simple.fullname" . }}
+              mountPath: {{ .Values.transcodePersistence.mountPath }}
+              subPath: {{ .Values.transcodePersistence.subPath }}
+            - name: media-{{ include "plex-simple.fullname" . }}
+              mountPath: {{ .Values.mediaPersistence.mountPath }}
+              subPath: {{ .Values.mediaPersistence.subPath }}
+          env:
+{{ if .Values.environmentVars }}
+{{ toYaml .Values.environmentVars | indent 12 }}
+{{ end }}
       volumes:
-
-        - name: database-{{ include "plex-simple.fullname" . }}
-          {{- if .Values.persistence.enabled }}
-          persistentVolumeClaim:
-            claimName: database-{{ include "plex-simple.fullname" . }}
-          {{- else }}
-          emptyDir: {}
-          {{- end }}
-
-       - name: transcode-{{ include "plex-simple.fullname" . }}
-          {{- if .Values.persistence.enabled }}
-          persistentVolumeClaim:
-            claimName: transcode-{{ include "plex-simple.fullname" . }}
-          {{- else }}
-          emptyDir: {}
-          {{- end }}
-
-       - name: media-{{ include "plex-simple.fullname" . }}
-          {{- if .Values.persistence.enabled }}
-          persistentVolumeClaim:
-            claimName: media-{{ include "plex-simple.fullname" . }}
-          {{- else }}
-          emptyDir: {}
-          {{- end }}
-
+      - name: database-{{ include "plex-simple.fullname" . }}
+        {{- if .Values.databasePersistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ if .Values.databasePersistence.existingClaim }}{{ .Values.databasePersistence.existingClaim }}{{- else }}database-{{ include "plex-simple.fullname" . }}{{- end }}
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+      - name: transcode-{{ include "plex-simple.fullname" . }}
+        {{- if .Values.transcodePersistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ if .Values.transcodePersistence.existingClaim }}{{ .Values.transcodePersistence.existingClaim }}{{- else }}transcode-{{ include "plex-simple.fullname" . }}{{- end }}
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+      - name: media-{{ include "plex-simple.fullname" . }}
+        {{- if .Values.mediaPersistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ if .Values.mediaPersistence.existingClaim }}{{ .Values.mediaPersistence.existingClaim }}{{- else }}media-{{ include "plex-simple.fullname" . }}{{- end }}
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

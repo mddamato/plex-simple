@@ -1,1 +1,1 @@
-Work in progress
+This is a simpler approach to configuring plex using the plexinc Docker image. May not be suitable for a lot of people.

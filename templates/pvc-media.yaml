@@ -1,4 +1,4 @@
-{{- if and .Values.media-persistence.enabled (not .Values.media-persistence.existingClaim) }}
+{{- if and .Values.mediaPersistence.enabled (not .Values.mediaPersistence.existingClaim) }}
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
@@ -7,11 +7,11 @@ metadata:
   name: media-{{ include "plex-simple.fullname" . }}
 spec:
   accessModes:
-  {{- range .Values.media-persistence.accessModes }}
+  {{- range .Values.mediaPersistence.accessModes }}
     - {{ . | quote }}
   {{- end }}
   resources:
     requests:
-      storage: {{ .Values.media-persistence.size | quote }}
-  {{ include "plex-simple.media-storageClass" . }}
+      storage: {{ .Values.mediaPersistence.size | quote }}
+  {{ include "plex-simple.mediaStorageClass" . }}
 {{- end }}

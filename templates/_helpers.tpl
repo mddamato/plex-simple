@@ -65,7 +65,7 @@ Create the name of the service account to use
 {{/*
 Return  the proper Storage Class
 */}}
-{{- define "plex-simple.database-storageClass" -}}
+{{- define "plex-simple.databaseStorageClass" -}}
 {{/*
 Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
 but Helm 2.9 and 2.10 does not support it, so we need to implement this if-else logic.
@@ -78,20 +78,20 @@ but Helm 2.9 and 2.10 does not support it, so we need to implement this if-else 
             {{- printf "storageClassName: %s" .Values.global.storageClass -}}
         {{- end -}}
     {{- else -}}
-        {{- if .Values.media-persistence.storageClass -}}
-              {{- if (eq "-" .Values.media-persistence.storageClass) -}}
+        {{- if .Values.databasePersistence.storageClass -}}
+              {{- if (eq "-" .Values.databasePersistence.storageClass) -}}
                   {{- printf "storageClassName: \"\"" -}}
               {{- else }}
-                  {{- printf "storageClassName: %s" .Values.media-persistence.storageClass -}}
+                  {{- printf "storageClassName: %s" .Values.databasePersistence.storageClass -}}
               {{- end -}}
         {{- end -}}
     {{- end -}}
 {{- else -}}
-    {{- if .Values.media-persistence.storageClass -}}
-        {{- if (eq "-" .Values.media-persistence.storageClass) -}}
+    {{- if .Values.databasePersistence.storageClass -}}
+        {{- if (eq "-" .Values.databasePersistence.storageClass) -}}
             {{- printf "storageClassName: \"\"" -}}
         {{- else }}
-            {{- printf "storageClassName: %s" .Values.media-persistence.storageClass -}}
+            {{- printf "storageClassName: %s" .Values.databasePersistence.storageClass -}}
         {{- end -}}
     {{- end -}}
 {{- end -}}
@@ -100,7 +100,7 @@ but Helm 2.9 and 2.10 does not support it, so we need to implement this if-else 
 {{/*
 Return  the proper Storage Class
 */}}
-{{- define "plex-simple.transcode-storageClass" -}}
+{{- define "plex-simple.transcodeStorageClass" -}}
 {{/*
 Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
 but Helm 2.9 and 2.10 does not support it, so we need to implement this if-else logic.
@@ -113,20 +113,20 @@ but Helm 2.9 and 2.10 does not support it, so we need to implement this if-else 
             {{- printf "storageClassName: %s" .Values.global.storageClass -}}
         {{- end -}}
     {{- else -}}
-        {{- if .Values.media-persistence.storageClass -}}
-              {{- if (eq "-" .Values.media-persistence.storageClass) -}}
+        {{- if .Values.transcodePersistence.storageClass -}}
+              {{- if (eq "-" .Values.transcodePersistence.storageClass) -}}
                   {{- printf "storageClassName: \"\"" -}}
               {{- else }}
-                  {{- printf "storageClassName: %s" .Values.media-persistence.storageClass -}}
+                  {{- printf "storageClassName: %s" .Values.transcodePersistence.storageClass -}}
               {{- end -}}
         {{- end -}}
     {{- end -}}
 {{- else -}}
-    {{- if .Values.media-persistence.storageClass -}}
-        {{- if (eq "-" .Values.media-persistence.storageClass) -}}
+    {{- if .Values.transcodePersistence.storageClass -}}
+        {{- if (eq "-" .Values.transcodePersistence.storageClass) -}}
             {{- printf "storageClassName: \"\"" -}}
         {{- else }}
-            {{- printf "storageClassName: %s" .Values.media-persistence.storageClass -}}
+            {{- printf "storageClassName: %s" .Values.transcodePersistence.storageClass -}}
         {{- end -}}
     {{- end -}}
 {{- end -}}
@@ -135,7 +135,7 @@ but Helm 2.9 and 2.10 does not support it, so we need to implement this if-else 
 {{/*
 Return  the proper Storage Class
 */}}
-{{- define "plex-simple.media-storageClass" -}}
+{{- define "plex-simple.mediaStorageClass" -}}
 {{/*
 Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
 but Helm 2.9 and 2.10 does not support it, so we need to implement this if-else logic.
@@ -148,20 +148,20 @@ but Helm 2.9 and 2.10 does not support it, so we need to implement this if-else 
             {{- printf "storageClassName: %s" .Values.global.storageClass -}}
         {{- end -}}
     {{- else -}}
-        {{- if .Values.media-persistence.storageClass -}}
-              {{- if (eq "-" .Values.media-persistence.storageClass) -}}
+        {{- if .Values.mediaPersistence.storageClass -}}
+              {{- if (eq "-" .Values.mediaPersistence.storageClass) -}}
                   {{- printf "storageClassName: \"\"" -}}
               {{- else }}
-                  {{- printf "storageClassName: %s" .Values.media-persistence.storageClass -}}
+                  {{- printf "storageClassName: %s" .Values.mediaPersistence.storageClass -}}
               {{- end -}}
         {{- end -}}
     {{- end -}}
 {{- else -}}
-    {{- if .Values.media-persistence.storageClass -}}
-        {{- if (eq "-" .Values.media-persistence.storageClass) -}}
+    {{- if .Values.mediaPersistence.storageClass -}}
+        {{- if (eq "-" .Values.mediaPersistence.storageClass) -}}
             {{- printf "storageClassName: \"\"" -}}
         {{- else }}
-            {{- printf "storageClassName: %s" .Values.media-persistence.storageClass -}}
+            {{- printf "storageClassName: %s" .Values.mediaPersistence.storageClass -}}
         {{- end -}}
     {{- end -}}
 {{- end -}}

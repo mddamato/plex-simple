@@ -1,4 +1,4 @@
-{{- if and .Values.transcode-persistence.enabled (not .Values.transcode-persistence.existingClaim) }}
+{{- if and .Values.transcodePersistence.enabled (not .Values.transcodePersistence.existingClaim) }}
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
@@ -7,11 +7,11 @@ metadata:
   name: transcode-{{ include "plex-simple.fullname" . }}
 spec:
   accessModes:
-  {{- range .Values.transcode-persistence.accessModes }}
+  {{- range .Values.transcodePersistence.accessModes }}
     - {{ . | quote }}
   {{- end }}
   resources:
     requests:
-      storage: {{ .Values.transcode-persistence.size | quote }}
-  {{ include "plex-simple.transcode-storageClass" . }}
+      storage: {{ .Values.transcodePersistence.size | quote }}
+  {{ include "plex-simple.transcodeStorageClass" . }}
 {{- end }}
